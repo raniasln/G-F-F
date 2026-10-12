@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aggregatzustände unter Druck | States of Matter</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandDarkBlue: '#0B253B',
+            brandVividGreen: '#02ECA6',
+            brandWarmOrange: '#FF774B',
+            brandWarmGrey: '#F2EFED',
+            brandTuvBlue: '#0046AD'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #F2EFED;
+      color: #0B253B;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .chamber-bg {
+      background: radial-gradient(circle at 50% 25%, #143552 0%, #0B253B 100%);
+      box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.5);
+    }
+    /* Smooth collapsible accordion animation */
+    .accordion-content {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+      opacity: 0;
+    }
+    .accordion-content.expanded {
+      grid-template-rows: 1fr;
+      opacity: 1;
+    }
+    .accordion-inner {
+      overflow: hidden;
+    }
+    /* Card borders matching course style */
+    .card-active {
+      border-left: 5px solid #02ECA6 !important;
+      background-color: #ffffff !important;
+      box-shadow: 0 10px 25px -4px rgba(11, 37, 59, 0.08), 0 4px 6px -2px rgba(11, 37, 59, 0.04);
+    }
+    .card-inactive {
+      border-left: 5px solid transparent !important;
+      background-color: rgba(255, 255, 255, 0.7);
+    }
+    .card-inactive:hover {
+      border-left: 5px solid rgba(2, 236, 166, 0.45) !important;
+      background-color: #ffffff;
+    }
+    .rotate-indicator {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .rotate-indicator.open {
+      transform: rotate(180deg);
+    }
+  </style>
+</head>
+<body class="p-2 sm:p-4 md:p-6 min-h-screen flex items-center justify-center">
+
+  <div class="w-full max-w-5xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+    
+    <!-- Top Header Bar with Corporate Branding and Language Switcher -->
+    <header class="bg-brandDarkBlue text-white px-5 py-4 flex flex-wrap items-center justify-between gap-3 border-b-2 border-brandVividGreen">
+      <div class="flex items-center gap-3">
+        <span class="w-9 h-9 rounded-xl bg-brandTuvBlue flex items-center justify-center text-white font-bold text-base shadow-sm">
+          ⚗️
+        </span>
+        <div>
+          <h1 id="ui-title" class="text-base sm:text-lg font-bold tracking-tight text-white leading-tight">
+            Verhalten unter Druck: Aggregatzustände
+          </h1>
+          <p id="ui-subtitle" class="text-xs text-slate-300">
+            Interaktive Simulation für Druckgeräte und Medien
+          </p>
+        </div>
+      </div>
+
+      <!-- Language Selector (DE / EN / FR) -->
+      <div class="flex items-center bg-slate-900/70 p-1 rounded-xl border border-slate-700/80">
+        <button onclick="setLanguage('de')" id="lang-btn-de" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-brandDarkBlue bg-brandVividGreen shadow-sm" aria-label="Deutsch">
+          DE
+        </button>
+        <button onclick="setLanguage('en')" id="lang-btn-en" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all" aria-label="English">
+          EN
+        </button>
+        <button onclick="setLanguage('fr')" id="lang-btn-fr" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all" aria-label="Français">
+          FR
+        </button>
+      </div>
+    </header>
+
+    <!-- Context Intro Banner from Course Screenshot -->
+    <section class="bg-brandWarmGrey px-5 py-3.5 border-b border-slate-200">
+      <p id="course-intro-text" class="text-xs sm:text-sm text-brandDarkBlue leading-relaxed font-medium">
+        Druckgeräte enthalten in der Regel Gase oder Flüssigkeiten. Die grundlegenden Aggregatzustände sind wichtig für das Verständnis des Verhaltens unter Druck:
+      </p>
+    </section>
+
+    <!-- Main Interactive Grid: Accordion Left, Chamber Right -->
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+      
+      <!-- Accordion Selection Column (Left) -->
+      <section class="lg:col-span-6 p-4 sm:p-6 flex flex-col gap-3 justify-center bg-slate-50/50">
+        
+        <!-- CARD 1: Gas -->
+        <div id="card-gas" onclick="toggleState('gas')" role="button" tabindex="0" 
+             class="card-active p-4 rounded-xl cursor-pointer border border-slate-200 transition-all duration-200">
+          <div class="flex items-center justify-between">
+            <h3 id="card-title-gas" class="text-base font-bold text-brandTuvBlue flex items-center gap-2">
+              Gas
+            </h3>
+            <div class="flex items-center gap-2">
+              <span id="badge-gas" class="mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-brandVividGreen/15 text-brandDarkBlue border border-brandVividGreen/40">
+                AKTIV
+              </span>
+              <svg id="icon-gas" class="w-4 h-4 text-brandTuvBlue rotate-indicator open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+          <!-- Collapsible Content -->
+          <div id="collapse-gas" class="accordion-content expanded">
+            <div class="accordion-inner pt-3">
+              <ul class="text-xs sm:text-[13px] text-slate-700 space-y-2 border-t border-slate-100 pt-2.5">
+                <li class="flex items-start gap-2">
+                  <span class="text-brandVividGreen font-extrabold text-sm leading-none">•</span>
+                  <span id="gas-bullet-1">Hohe Kompressibilität</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-brandVividGreen font-extrabold text-sm leading-none">•</span>
+                  <span id="gas-bullet-2">Füllt jeden Raum aus</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-brandVividGreen font-extrabold text-sm leading-none">•</span>
+                  <span id="gas-bullet-3">Enthält viel gespeicherte Energie</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 2: Liquid -->
+        <div id="card-liquid" onclick="toggleState('liquid')" role="button" tabindex="0" 
+             class="card-inactive p-4 rounded-xl cursor-pointer border border-slate-200 transition-all duration-200">
+          <div class="flex items-center justify-between">
+            <h3 id="card-title-liquid" class="text-base font-bold text-brandTuvBlue flex items-center gap-2">
+              Flüssigkeit
+            </h3>
+            <div class="flex items-center gap-2">
+              <span id="badge-liquid" class="mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-500">
+                WÄHLEN
+              </span>
+              <svg id="icon-liquid" class="w-4 h-4 text-slate-400 rotate-indicator" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+          <!-- Collapsible Content -->
+          <div id="collapse-liquid" class="accordion-content">
+            <div class="accordion-inner pt-3">
+              <ul class="text-xs sm:text-[13px] text-slate-700 space-y-2 border-t border-slate-100 pt-2.5">
+                <li class="flex items-start gap-2">
+                  <span class="text-brandTuvBlue font-extrabold text-sm leading-none">•</span>
+                  <span id="liquid-bullet-1">Nahezu inkompressibel</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-brandTuvBlue font-extrabold text-sm leading-none">•</span>
+                  <span id="liquid-bullet-2">Konstant bleibendes Volumen</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-brandTuvBlue font-extrabold text-sm leading-none">•</span>
+                  <span id="liquid-bullet-3">Energie wirkt primär auf die Gefäßwand</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3: Solid -->
+        <div id="card-solid" onclick="toggleState('solid')" role="button" tabindex="0" 
+             class="card-inactive p-4 rounded-xl cursor-pointer border border-slate-200 transition-all duration-200">
+          <div class="flex items-center justify-between">
+            <h3 id="card-title-solid" class="text-base font-bold text-brandTuvBlue flex items-center gap-2">
+              Feststoff
+            </h3>
+            <div class="flex items-center gap-2">
+              <span id="badge-solid" class="mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-500">
+                WÄHLEN
+              </span>
+              <svg id="icon-solid" class="w-4 h-4 text-slate-400 rotate-indicator" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+          <!-- Collapsible Content -->
+          <div id="collapse-solid" class="accordion-content">
+            <div class="accordion-inner pt-3">
+              <ul class="text-xs sm:text-[13px] text-slate-700 space-y-2 border-t border-slate-100 pt-2.5">
+                <li class="flex items-start gap-2">
+                  <span class="text-brandWarmOrange font-extrabold text-sm leading-none">•</span>
+                  <span id="solid-bullet-1">Sehr geringe Kompressibilität</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-brandWarmOrange font-extrabold text-sm leading-none">•</span>
+                  <span id="solid-bullet-2">Keine wesentlichen Druckeffekte</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-brandWarmOrange font-extrabold text-sm leading-none">•</span>
+                  <span id="solid-bullet-3">Relevant nur als Partikel im Medium</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Molecular Simulation Chamber (Right Column) -->
+      <section class="lg:col-span-6 p-4 sm:p-6 bg-brandDarkBlue flex flex-col items-center justify-between">
+        
+        <!-- Simulation Vessel -->
+        <div class="w-full relative rounded-xl border-2 border-brandTuvBlue chamber-bg overflow-hidden flex flex-col shadow-2xl aspect-[4/3] max-h-[350px]">
+          
+          <!-- Glossy reflection overlay -->
+          <div class="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-white/[0.07] z-10"></div>
+          
+          <!-- Chamber Top Bar / Telemetry Header -->
+          <div class="z-20 px-3.5 py-2 bg-brandDarkBlue/90 border-b border-slate-700/60 flex items-center justify-between text-xs font-mono text-slate-300">
+            <div class="flex items-center gap-2">
+              <span id="status-indicator-dot" class="w-2.5 h-2.5 rounded-full bg-brandVividGreen animate-pulse"></span>
+              <span id="chamber-state-tag" class="font-bold uppercase tracking-wider text-white">GAS</span>
+            </div>
+            <div class="flex items-center gap-3 text-[11px]">
+              <span><span id="label-pressure">Druck</span>: <strong id="pressure-val" class="text-brandVividGreen">3.2 bar</strong></span>
+              <span><span id="label-energy">Kinetik</span>: <strong id="energy-val" class="text-brandWarmOrange">Hoch</strong></span>
+            </div>
+          </div>
+
+          <!-- Molecular Canvas -->
+          <canvas id="moleculeCanvas" class="w-full h-full cursor-grab active:cursor-grabbing block touch-none z-10"></canvas>
+
+          <!-- Interaction Hint -->
+          <div class="absolute bottom-2.5 left-2.5 z-20 pointer-events-none bg-brandDarkBlue/85 backdrop-blur px-2.5 py-1 rounded-md border border-slate-600/70 text-[10px] text-slate-300 flex items-center gap-1.5 shadow">
+            <span>👆</span>
+            <span id="interaction-hint">Klicken oder ziehen, um Moleküle zu bewegen</span>
+          </div>
+        </div>
+
+        <!-- Explanatory State Banner Below Chamber -->
+        <div class="w-full mt-4 bg-slate-900/90 p-3.5 rounded-xl border border-slate-700/80 text-xs text-slate-300 flex items-center justify-between gap-3 shadow-md">
+          <div class="flex items-center gap-2.5">
+            <span id="vessel-summary-icon" class="text-xl">💨</span>
+            <div>
+              <div id="vessel-summary-title" class="font-bold text-white text-[13px]">Gasförmiges Medium</div>
+              <div id="vessel-summary-desc" class="text-slate-400 text-[11px]">Moleküle bewegen sich frei mit hoher Expansionskraft und kollidieren elastisch.</div>
+            </div>
+          </div>
+          <button onclick="toggleAgitation()" id="btn-agitate" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-brandTuvBlue hover:bg-blue-600 active:scale-95 text-white transition flex-shrink-0 shadow">
+            ⚡ Impulse
+          </button>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer Note -->
+    <footer class="px-5 py-3 bg-white border-t border-slate-200 text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-brandVividGreen"></span>
+        <span id="footer-note" class="font-medium text-slate-700">Druckgeräte-Sicherheit: Gase besitzen durch Expansion ein signifikant höheres Gefahrenpotenzial.</span>
+      </div>
+      <div class="font-mono text-[11px] text-slate-400">
+        Easygenerator Interactive Component
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    /* Multilingual Educational Content Dictionary */
+    const I18N = {
+      de: {
+        uiTitle: "Verhalten unter Druck: Aggregatzustände",
+        uiSubtitle: "Interaktive Simulation für Druckgeräte und Medien",
+        courseIntro: "Druckgeräte enthalten in der Regel Gase oder Flüssigkeiten. Die grundlegenden Aggregatzustände sind wichtig für das Verständnis des Verhaltens unter Druck:",
+        badgeActive: "AKTIV",
+        badgeSelect: "WÄHLEN",
+        labelPressure: "Druck",
+        labelEnergy: "Kinetik",
+        energyHigh: "Hoch",
+        energyMedium: "Mittel",
+        energyLow: "Niedrig",
+        interactionHint: "Klicken oder ziehen, um Moleküle zu bewegen",
+        btnAgitate: "⚡ Impulse",
+        footerNote: "Druckgeräte-Sicherheit: Gase besitzen durch Expansion ein signifikant höheres Gefahrenpotenzial.",
+        states: {
+          gas: {
+            title: "Gas",
+            bullets: [
+              "Hohe Kompressibilität",
+              "Füllt jeden Raum aus",
+              "Enthält viel gespeicherte Energie"
+            ],
+            tag: "GAS",
+            pressure: "3.2 bar",
+            summaryTitle: "Gasförmiges Medium",
+            summaryDesc: "Moleküle bewegen sich frei mit hoher Expansionskraft und kollidieren elastisch mit der Gefäßwand."
+          },
+          liquid: {
+            title: "Flüssigkeit",
+            bullets: [
+              "Nahezu inkompressibel",
+              "Konstant bleibendes Volumen",
+              "Energie wirkt primär auf die Gefäßwand"
+            ],
+            tag: "FLÜSSIGKEIT",
+            pressure: "1.0 bar (Hydraulisch)",
+            summaryTitle: "Flüssiges Medium",
+            summaryDesc: "Moleküle bleiben im Kontakt, gleiten dicht gepackt aneinander vorbei und halten das Volumen konstant."
+          },
+          solid: {
+            title: "Feststoff",
+            bullets: [
+              "Sehr geringe Kompressibilität",
+              "Keine wesentlichen Druckeffekte",
+              "Relevant nur als Partikel im Medium"
+            ],
+            tag: "FESTSTOFF",
+            pressure: "0.1 bar (Statisch)",
+            summaryTitle: "Fester Aggregatzustand",
+            summaryDesc: "Partikel schwingen dicht gepackt in einer geordneten Gitterstruktur ohne Eigenexpansion."
+          }
+        }
+      },
+      en: {
+        uiTitle: "Behaviour Under Pressure: States of Matter",
+        uiSubtitle: "Interactive Simulation for Pressure Equipment & Media",
+        courseIntro: "Pressure equipment generally contains gases or liquids. Understanding the fundamental states of matter is essential for comprehending behaviour under pressure:",
+        badgeActive: "ACTIVE",
+        badgeSelect: "SELECT",
+        labelPressure: "Pressure",
+        labelEnergy: "Kinetics",
+        energyHigh: "High",
+        energyMedium: "Medium",
+        energyLow: "Low",
+        interactionHint: "Click or drag to agitate molecules",
+        btnAgitate: "⚡ Agitate",
+        footerNote: "Pressure Equipment Safety: Gases possess significantly higher hazard potential due to expansion.",
+        states: {
+          gas: {
+            title: "Gas",
+            bullets: [
+              "High compressibility",
+              "Fills any volume",
+              "Contains significant stored energy"
+            ],
+            tag: "GAS",
+            pressure: "3.2 bar",
+            summaryTitle: "Gaseous Medium",
+            summaryDesc: "Molecules move freely at high velocity with expansion force, rebounding elastically."
+          },
+          liquid: {
+            title: "Liquid",
+            bullets: [
+              "Virtually incompressible",
+              "Constant volume",
+              "Energy acts primarily on the vessel wall"
+            ],
+            tag: "LIQUID",
+            pressure: "1.0 bar (Hydraulic)",
+            summaryTitle: "Liquid Medium",
+            summaryDesc: "Molecules maintain close contact, sliding freely over one another whilst retaining volume."
+          },
+          solid: {
+            title: "Solid",
+            bullets: [
+              "Very low compressibility",
+              "No significant pressure effects",
+              "Relevant only as particles in the medium"
+            ],
+            tag: "SOLID",
+            pressure: "0.1 bar (Static)",
+            summaryTitle: "Solid State",
+            summaryDesc: "Particles vibrate in a fixed crystalline lattice structure without volumetric expansion."
+          }
+        }
+      },
+      fr: {
+        uiTitle: "Comportement sous pression : États de la matière",
+        uiSubtitle: "Simulation interactive pour équipements sous pression et fluides",
+        courseIntro: "Les équipements sous pression contiennent généralement des gaz ou des liquides. Les états fondamentaux de la matière sont essentiels pour comprendre le comportement sous pression :",
+        badgeActive: "ACTIF",
+        badgeSelect: "CHOISIR",
+        labelPressure: "Pression",
+        labelEnergy: "Cinétique",
+        energyHigh: "Élevée",
+        energyMedium: "Moyenne",
+        energyLow: "Faible",
+        interactionHint: "Cliquez ou glissez pour agiter les molécules",
+        btnAgitate: "⚡ Agitation",
+        footerNote: "Sécurité des équipements : Les gaz présentent un risque bien plus élevé en raison de leur expansion.",
+        states: {
+          gas: {
+            title: "Gaz",
+            bullets: [
+              "Haute compressibilité",
+              "Occupe tout le volume",
+              "Contient une grande quantité d'énergie stockée"
+            ],
+            tag: "GAZ",
+            pressure: "3.2 bar",
+            summaryTitle: "Milieu gazeux",
+            summaryDesc: "Les molécules se déplacent librement avec une force d'expansion élevée et rebondissent sur les parois."
+          },
+          liquid: {
+            title: "Liquide",
+            bullets: [
+              "Quasi-incompressible",
+              "Volume constant",
+              "L'énergie agit principalement sur la paroi du récipient"
+            ],
+            tag: "LIQUIDE",
+            pressure: "1.0 bar (Hydraulique)",
+            summaryTitle: "Milieu liquide",
+            summaryDesc: "Les molécules restent étroitement liées tout en glissant les unes sur les autres au fond du récipient."
+          },
+          solid: {
+            title: "Solide",
+            bullets: [
+              "Très faible compressibilité",
+              "Aucun effet de pression significatif",
+              "Pertinent uniquement sous forme de particules dans le fluide"
+            ],
+            tag: "SOLIDE",
+            pressure: "0.1 bar (Statique)",
+            summaryTitle: "État solide",
+            summaryDesc: "Les particules vibrent dans un réseau cristallin compact sans expansion volumétrique."
+          }
+        }
+      }
+    };
+
+    // State & Language variables
+    let currentLang = 'de';
+    let currentState = 'gas'; // 'gas' | 'liquid' | 'solid'
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      
+      // Update Language button styles
+      ['de', 'en', 'fr'].forEach(l => {
+        const btn = document.getElementById(`lang-btn-${l}`);
+        if (l === lang) {
+          btn.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-brandDarkBlue bg-brandVividGreen shadow-sm";
+        } else {
+          btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all";
+        }
+      });
+
+      const t = I18N[lang];
+      document.getElementById('ui-title').textContent = t.uiTitle;
+      document.getElementById('ui-subtitle').textContent = t.uiSubtitle;
+      document.getElementById('course-intro-text').textContent = t.courseIntro;
+      document.getElementById('label-pressure').textContent = t.labelPressure;
+      document.getElementById('label-energy').textContent = t.labelEnergy;
+      document.getElementById('interaction-hint').textContent = t.interactionHint;
+      document.getElementById('btn-agitate').textContent = t.btnAgitate;
+      document.getElementById('footer-note').textContent = t.footerNote;
+
+      // Update Card titles & bullet points
+      document.getElementById('card-title-gas').innerHTML = t.states.gas.title;
+      document.getElementById('gas-bullet-1').textContent = t.states.gas.bullets[0];
+      document.getElementById('gas-bullet-2').textContent = t.states.gas.bullets[1];
+      document.getElementById('gas-bullet-3').textContent = t.states.gas.bullets[2];
+
+      document.getElementById('card-title-liquid').innerHTML = t.states.liquid.title;
+      document.getElementById('liquid-bullet-1').textContent = t.states.liquid.bullets[0];
+      document.getElementById('liquid-bullet-2').textContent = t.states.liquid.bullets[1];
+      document.getElementById('liquid-bullet-3').textContent = t.states.liquid.bullets[2];
+
+      document.getElementById('card-title-solid').innerHTML = t.states.solid.title;
+      document.getElementById('solid-bullet-1').textContent = t.states.solid.bullets[0];
+      document.getElementById('solid-bullet-2').textContent = t.states.solid.bullets[1];
+      document.getElementById('solid-bullet-3').textContent = t.states.solid.bullets[2];
+
+      // Refresh currently selected card and telemetry
+      applyStateUI(currentState);
+    }
+
+    function toggleState(state) {
+      currentState = state;
+      applyStateUI(state);
+      resetParticlePositionsForState(state);
+    }
+
+    function applyStateUI(state) {
+      const t = I18N[currentLang];
+      const stateData = t.states[state];
+      const allStates = ['gas', 'liquid', 'solid'];
+
+      allStates.forEach(k => {
+        const cardElem = document.getElementById(`card-${k}`);
+        const badgeElem = document.getElementById(`badge-${k}`);
+        const collapseElem = document.getElementById(`collapse-${k}`);
+        const iconElem = document.getElementById(`icon-${k}`);
+
+        if (k === state) {
+          // EXPAND & ACTIVATE
+          cardElem.className = "card-active p-4 rounded-xl cursor-pointer border border-slate-300 transition-all duration-200";
+          badgeElem.textContent = t.badgeActive;
+          badgeElem.className = "mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-brandVividGreen/15 text-brandDarkBlue border border-brandVividGreen/40";
+          collapseElem.classList.add('expanded');
+          iconElem.classList.add('open');
+          iconElem.className = "w-4 h-4 text-brandTuvBlue rotate-indicator open";
+        } else {
+          // COLLAPSE & DEACTIVATE
+          cardElem.className = "card-inactive p-4 rounded-xl cursor-pointer border border-slate-200 transition-all duration-200";
+          badgeElem.textContent = t.badgeSelect;
+          badgeElem.className = "mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-500";
+          collapseElem.classList.remove('expanded');
+          iconElem.classList.remove('open');
+          iconElem.className = "w-4 h-4 text-slate-400 rotate-indicator";
+        }
+      });
+
+      // Update Chamber Telemetry
+      document.getElementById('chamber-state-tag').textContent = stateData.tag;
+      document.getElementById('pressure-val').textContent = stateData.pressure;
+      document.getElementById('vessel-summary-title').textContent = stateData.summaryTitle;
+      document.getElementById('vessel-summary-desc').textContent = stateData.summaryDesc;
+
+      const dot = document.getElementById('status-indicator-dot');
+      const iconDesc = document.getElementById('vessel-summary-icon');
+      const energyElem = document.getElementById('energy-val');
+
+      if (state === 'gas') {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-brandVividGreen animate-pulse";
+        iconDesc.textContent = "💨";
+        energyElem.textContent = t.energyHigh;
+        energyElem.className = "text-brandVividGreen font-bold";
+      } else if (state === 'liquid') {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse";
+        iconDesc.textContent = "💧";
+        energyElem.textContent = t.energyMedium;
+        energyElem.className = "text-sky-300 font-bold";
+      } else {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-brandWarmOrange";
+        iconDesc.textContent = "🧊";
+        energyElem.textContent = t.energyLow;
+        energyElem.className = "text-brandWarmOrange font-bold";
+      }
+    }
+  </script>
+
+  <script>
+    /* Canvas Molecular Simulation Engine */
+    const canvas = document.getElementById('moleculeCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0;
+    let height = 0;
+    const dpr = window.devicePixelRatio || 1;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    const PARTICLE_COUNT = 54;
+    const PARTICLE_RADIUS = 7.5;
+    const particles = [];
+
+    // Interactive pointer for touch/mouse drag
+    const pointer = { x: -1000, y: -1000, active: false, radius: 55 };
+
+    // Initialise particles
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        gridX: 0,
+        gridY: 0,
+        radius: PARTICLE_RADIUS,
+        isMixtureParticle: i % 8 === 0 // suspension grain
+      });
+    }
+
+    function calculateSolidGrid() {
+      const cols = 9;
+      const rows = 6;
+      const spacing = PARTICLE_RADIUS * 2.3;
+      const gridWidth = (cols - 1) * spacing;
+      const startX = (width - gridWidth) / 2;
+      const startY = height - (rows * spacing) - 15;
+
+      particles.forEach((p, idx) => {
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        const stagger = (row % 2 === 1) ? (spacing * 0.45) : 0;
+        p.gridX = startX + (col * spacing) + stagger;
+        p.gridY = startY + (row * (spacing * 0.9));
+      });
+    }
+
+    function resetParticlePositionsForState(state) {
+      calculateSolidGrid();
+
+      particles.forEach((p) => {
+        if (state === 'gas') {
+          p.x = PARTICLE_RADIUS + Math.random() * (width - PARTICLE_RADIUS * 2);
+          p.y = PARTICLE_RADIUS + Math.random() * (height - PARTICLE_RADIUS * 2);
+          const speed = 3.6 + Math.random() * 2.2;
+          const theta = Math.random() * Math.PI * 2;
+          p.vx = Math.cos(theta) * speed;
+          p.vy = Math.sin(theta) * speed;
+        } else if (state === 'liquid') {
+          p.x = width * 0.12 + Math.random() * (width * 0.76);
+          p.y = height * 0.45 + Math.random() * (height * 0.48);
+          p.vx = (Math.random() - 0.5) * 1.5;
+          p.vy = (Math.random() - 0.5) * 1.5;
+        } else { // solid
+          p.x = p.gridX + (Math.random() - 0.5) * 3;
+          p.y = p.gridY + (Math.random() - 0.5) * 3;
+          p.vx = 0;
+          p.vy = 0;
+        }
+      });
+    }
+
+    function toggleAgitation() {
+      particles.forEach(p => {
+        const force = 4.8;
+        p.vx += (Math.random() - 0.5) * force;
+        p.vy -= Math.random() * force;
+      });
+    }
+
+    function updatePhysics() {
+      const pad = PARTICLE_RADIUS;
+      const left = pad;
+      const right = width - pad;
+      const top = pad;
+      const bottom = height - pad;
+
+      if (currentState === 'gas') {
+        const targetSpeed = 4.2;
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+
+          // Elastic particle collision
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dx = p2.x - p.x;
+            const dy = p2.y - p.y;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            const minDist = PARTICLE_RADIUS * 2;
+
+            if (dist < minDist) {
+              const nx = dx / dist;
+              const ny = dy / dist;
+              const kx = p.vx - p2.vx;
+              const ky = p.vy - p2.vy;
+              const pVel = 2 * (nx * kx + ny * ky) / 2;
+
+              p.vx -= pVel * nx;
+              p.vy -= pVel * ny;
+              p2.vx += pVel * nx;
+              p2.vy += pVel * ny;
+
+              const overlap = (minDist - dist) * 0.5;
+              p.x -= nx * overlap;
+              p.y -= ny * overlap;
+              p2.x += nx * overlap;
+              p2.y += ny * overlap;
+            }
+          }
+
+          // Maintain kinetic velocity
+          const currentSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy) || 0.1;
+          p.vx = (p.vx / currentSpeed) * (targetSpeed * 0.95 + currentSpeed * 0.05);
+          p.vy = (p.vy / currentSpeed) * (targetSpeed * 0.95 + currentSpeed * 0.05);
+
+          p.x += p.vx;
+          p.y += p.vy;
+
+          // Wall collisions
+          if (p.x <= left) { p.x = left; p.vx = Math.abs(p.vx); }
+          if (p.x >= right) { p.x = right; p.vx = -Math.abs(p.vx); }
+          if (p.y <= top) { p.y = top; p.vy = Math.abs(p.vy); }
+          if (p.y >= bottom) { p.y = bottom; p.vy = -Math.abs(p.vy); }
+        }
+
+      } else if (currentState === 'liquid') {
+        const gravity = 0.22;
+        const jitter = 0.45;
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          p.vy += gravity;
+
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dx = p2.x - p.x;
+            const dy = p2.y - p.y;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            const minDist = PARTICLE_RADIUS * 2.15;
+
+            if (dist < minDist) {
+              const overlap = (minDist - dist) * 0.5;
+              const nx = dx / dist;
+              const ny = dy / dist;
+
+              p.x -= nx * overlap * 0.55;
+              p.y -= ny * overlap * 0.55;
+              p2.x += nx * overlap * 0.55;
+              p2.y += ny * overlap * 0.55;
+
+              p.vx -= nx * 0.15;
+              p.vy -= ny * 0.15;
+              p2.vx += nx * 0.15;
+              p2.vy += ny * 0.15;
+            }
+          }
+
+          p.vx += (Math.random() - 0.5) * jitter;
+          p.vy += (Math.random() - 0.5) * jitter;
+          p.vx *= 0.92;
+          p.vy *= 0.92;
+
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < left) { p.x = left; p.vx *= -0.4; }
+          if (p.x > right) { p.x = right; p.vx *= -0.4; }
+          if (p.y < top) { p.y = top; p.vy *= -0.2; }
+          if (p.y > bottom) { p.y = bottom; p.vy *= -0.3; }
+        }
+
+      } else if (currentState === 'solid') {
+        particles.forEach(p => {
+          const dx = p.gridX - p.x;
+          const dy = p.gridY - p.y;
+          
+          p.vx += dx * 0.18;
+          p.vy += dy * 0.18;
+          p.vx *= 0.70;
+          p.vy *= 0.70;
+
+          // Thermal vibration
+          p.vx += (Math.random() - 0.5) * 0.55;
+          p.vy += (Math.random() - 0.5) * 0.55;
+
+          p.x += p.vx;
+          p.y += p.vy;
+        });
+      }
+
+      // Pointer touch/mouse agitation
+      if (pointer.active) {
+        particles.forEach(p => {
+          const dx = p.x - pointer.x;
+          const dy = p.y - pointer.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < pointer.radius && dist > 0) {
+            const force = (pointer.radius - dist) / pointer.radius;
+            const angle = Math.atan2(dy, dx);
+            const impulse = force * 6.5;
+            p.vx += Math.cos(angle) * impulse;
+            p.vy += Math.sin(angle) * impulse;
+          }
+        });
+      }
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Blueprint grid backdrop
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.035)';
+      ctx.lineWidth = 1;
+      const step = 20;
+      for (let x = 0; x < width; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < height; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      // Lattice bonds for Solid
+      if (currentState === 'solid') {
+        ctx.strokeStyle = 'rgba(2, 236, 166, 0.2)';
+        ctx.lineWidth = 1.4;
+        const bondLimit = PARTICLE_RADIUS * 2.75;
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < bondLimit) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      // Motion vectors for Gas
+      if (currentState === 'gas') {
+        ctx.strokeStyle = 'rgba(2, 236, 166, 0.35)';
+        ctx.lineWidth = 1.5;
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x - p.vx * 3.2, p.y - p.vy * 3.2);
+          ctx.stroke();
+        });
+      }
+
+      // Pointer ring indicator
+      if (pointer.active) {
+        ctx.beginPath();
+        ctx.arc(pointer.x, pointer.y, pointer.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(2, 236, 166, 0.08)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(2, 236, 166, 0.4)';
+        ctx.setLineDash([3, 3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Render Molecule Spheres
+      particles.forEach(p => {
+        const grad = ctx.createRadialGradient(
+          p.x - p.radius * 0.35,
+          p.y - p.radius * 0.35,
+          p.radius * 0.1,
+          p.x,
+          p.y,
+          p.radius
+        );
+
+        if (currentState === 'gas') {
+          // Vivid Green (#02ECA6)
+          grad.addColorStop(0, '#a7fbe3');
+          grad.addColorStop(0.45, '#02ECA6');
+          grad.addColorStop(1, '#008b60');
+        } else if (currentState === 'liquid') {
+          // TÜV SÜD Blue (#0046AD)
+          grad.addColorStop(0, '#82b7ff');
+          grad.addColorStop(0.5, '#0046AD');
+          grad.addColorStop(1, '#00255c');
+        } else {
+          // Warm Orange for Solid (#FF774B) & Mixture Components
+          if (p.isMixtureParticle) {
+            grad.addColorStop(0, '#ffffff');
+            grad.addColorStop(0.5, '#02ECA6');
+            grad.addColorStop(1, '#0B253B');
+          } else {
+            grad.addColorStop(0, '#ffbeaa');
+            grad.addColorStop(0.5, '#FF774B');
+            grad.addColorStop(1, '#a63310');
+          }
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.shadowColor = currentState === 'gas' ? '#02ECA6' : 'rgba(0, 70, 173, 0.4)';
+        ctx.shadowBlur = currentState === 'gas' ? 7 : 3;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Specular highlight spot
+        ctx.beginPath();
+        ctx.arc(p.x - p.radius * 0.35, p.y - p.radius * 0.35, p.radius * 0.22, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.fill();
+      });
+    }
+
+    function loop() {
+      updatePhysics();
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    function setupInput() {
+      function getPos(e) {
+        const r = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - r.left, y: clientY - r.top };
+      }
+
+      canvas.addEventListener('mousedown', (e) => {
+        const p = getPos(e);
+        pointer.x = p.x; pointer.y = p.y; pointer.active = true;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!pointer.active) return;
+        const p = getPos(e);
+        pointer.x = p.x; pointer.y = p.y;
+      });
+
+      window.addEventListener('mouseup', () => {
+        pointer.active = false;
+        pointer.x = -1000; pointer.y = -1000;
+      });
+
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const p = getPos(e);
+        pointer.x = p.x; pointer.y = p.y; pointer.active = true;
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!pointer.active) return;
+        const p = getPos(e);
+        pointer.x = p.x; pointer.y = p.y;
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', () => {
+        pointer.active = false;
+        pointer.x = -1000; pointer.y = -1000;
+      });
+
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+        calculateSolidGrid();
+      });
+    }
+
+    window.addEventListener('load', () => {
+      resizeCanvas();
+      setupInput();
+      setLanguage('de');
+      toggleState('gas');
+      loop();
+    });
+  </script>
+</body>
+</html>
