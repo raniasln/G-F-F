@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="de" class="h-full">
+<html lang="de" class="w-full h-full m-0 p-0 overflow-hidden">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Aggregatzustände - Interaktive Simulation</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -34,212 +34,212 @@
       padding: 0;
     }
     html, body {
-      height: 100%;
       width: 100%;
-      overflow: hidden; /* Embed guard to eliminate vertical scrollbars */
+      height: 100%;
+      overflow: hidden;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #F2EFED;
+      background-color: #0B253B;
       color: #0B253B;
       user-select: none;
       -webkit-user-select: none;
+      touch-action: manipulation;
     }
     .mono {
       font-family: 'JetBrains Mono', monospace;
     }
     .chamber-vessel {
-      background: radial-gradient(ellipse at 50% 20%, #173b5a 0%, #0B253B 100%);
-      box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6);
+      background: radial-gradient(ellipse at 50% 25%, #133552 0%, #081a29 100%);
+      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.7);
     }
     /* Active Button States */
     .btn-active-gas {
       background-color: #0B253B !important;
       color: #ffffff !important;
       border-color: #02ECA6 !important;
-      box-shadow: 0 4px 12px rgba(2, 236, 166, 0.25);
+      box-shadow: 0 0 0 1px #02ECA6, 0 4px 14px rgba(2, 236, 166, 0.3);
     }
     .btn-active-liquid {
       background-color: #0B253B !important;
       color: #ffffff !important;
       border-color: #0046AD !important;
-      box-shadow: 0 4px 12px rgba(0, 70, 173, 0.3);
+      box-shadow: 0 0 0 1px #0046AD, 0 4px 14px rgba(0, 70, 173, 0.35);
     }
     .btn-active-solid {
       background-color: #0B253B !important;
       color: #ffffff !important;
       border-color: #FF774B !important;
-      box-shadow: 0 4px 12px rgba(255, 119, 75, 0.25);
+      box-shadow: 0 0 0 1px #FF774B, 0 4px 14px rgba(255, 119, 75, 0.3);
     }
   </style>
 </head>
-<body class="p-1 sm:p-2 h-full flex flex-col justify-center">
+<body class="w-full h-full flex flex-col justify-stretch p-0 m-0">
 
-  <!-- Main Card Container: Max height constrained for Easygenerator iframes -->
-  <div class="w-full h-full max-h-[480px] bg-white rounded-xl shadow-md border border-slate-200/90 flex flex-col overflow-hidden">
+  <!-- App Container: Edge-to-edge full width & height, no dead grey margins -->
+  <div class="w-full h-full flex flex-col bg-white overflow-hidden">
     
     <!-- Top Header Bar with Language Switch -->
-    <header class="bg-brandDarkBlue text-white px-3 sm:px-4 py-2 flex items-center justify-between flex-shrink-0 border-b-2 border-brandVividGreen">
+    <header class="bg-brandDarkBlue text-white px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between flex-shrink-0 border-b-2 border-brandVividGreen shadow-xs">
       <div class="flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-brandVividGreen animate-pulse"></span>
-        <h1 id="ui-title" class="text-xs sm:text-sm font-semibold tracking-tight text-slate-100">
-          Verhalten unter Druck: Aggregatzustände
+        <span class="w-2.5 h-2.5 rounded-full bg-brandVividGreen animate-pulse shadow-[0_0_8px_#02ECA6]"></span>
+        <h1 id="ui-title" class="text-xs sm:text-sm md:text-base font-bold tracking-tight text-white truncate">
+          Aggregatzustände
         </h1>
       </div>
 
-      <!-- Multilingual Selector (DE / EN / FR) -->
-      <div class="flex items-center bg-slate-900/90 p-0.5 rounded-lg border border-slate-700/70">
-        <button onclick="setLanguage('de')" id="lang-btn-de" class="px-2 py-0.5 rounded text-[11px] font-bold text-brandDarkBlue bg-brandVividGreen transition-colors">
+      <div class="flex items-center bg-slate-900/90 p-0.5 rounded-lg border border-slate-700/80 shadow-inner">
+        <button onclick="setLanguage('de')" id="lang-btn-de" class="px-2.5 py-1 rounded text-xs font-bold text-brandDarkBlue bg-brandVividGreen transition-colors">
           DE
         </button>
-        <button onclick="setLanguage('en')" id="lang-btn-en" class="px-2 py-0.5 rounded text-[11px] font-medium text-slate-300 hover:text-white transition-colors">
+        <button onclick="setLanguage('en')" id="lang-btn-en" class="px-2.5 py-1 rounded text-xs font-medium text-slate-300 hover:text-white transition-colors">
           EN
         </button>
-        <button onclick="setLanguage('fr')" id="lang-btn-fr" class="px-2 py-0.5 rounded text-[11px] font-medium text-slate-300 hover:text-white transition-colors">
+        <button onclick="setLanguage('fr')" id="lang-btn-fr" class="px-2.5 py-1 rounded text-xs font-medium text-slate-300 hover:text-white transition-colors">
           FR
         </button>
       </div>
     </header>
 
-    <!-- Main Content Flow (Buttons -> Zustand Strip -> Molecular Chamber) -->
-    <main class="flex flex-col flex-1 p-2.5 sm:p-3 gap-2 min-h-0 bg-brandWarmGrey/40 overflow-hidden">
+    <!-- Content Section: Buttons -> Status Banner -> Molecular Chamber -->
+    <div class="flex-1 flex flex-col min-h-0 p-2 sm:p-3 gap-2 bg-[#FAF8F7]">
       
       <!-- 1. THREE BUTTONS SIDE BY SIDE -->
       <div class="grid grid-cols-3 gap-2 sm:gap-3 flex-shrink-0">
         
         <!-- BUTTON 1: GAS -->
         <button id="btn-state-gas" onclick="toggleState('gas')" 
-                class="btn-active-gas w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-lg border-2 text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99]">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-3 h-3 rounded-full bg-brandVividGreen flex-shrink-0"></span>
+                class="btn-active-gas w-full px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg border-2 text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99]">
+          <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <span class="w-3.5 h-3.5 rounded-full bg-brandVividGreen flex-shrink-0 shadow-[0_0_8px_#02ECA6]"></span>
             <span id="title-gas" class="text-xs sm:text-sm font-bold truncate">Gas</span>
           </div>
-          <span id="badge-gas" class="mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-brandVividGreen text-brandDarkBlue uppercase tracking-wider flex-shrink-0">
+          <span id="badge-gas" class="mono text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-brandVividGreen text-brandDarkBlue uppercase tracking-wider flex-shrink-0">
             AKTIV
           </span>
         </button>
 
         <!-- BUTTON 2: LIQUID -->
         <button id="btn-state-liquid" onclick="toggleState('liquid')" 
-                class="bg-white hover:bg-slate-50 text-brandDarkBlue border-2 border-slate-200 w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-lg text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99]">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-3 h-3 rounded-full bg-brandTuvBlue opacity-60 flex-shrink-0"></span>
+                class="bg-white hover:bg-slate-50 text-brandDarkBlue border-2 border-slate-200/90 w-full px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99] shadow-2xs">
+          <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <span class="w-3.5 h-3.5 rounded-full bg-brandTuvBlue flex-shrink-0 opacity-70"></span>
             <span id="title-liquid" class="text-xs sm:text-sm font-bold truncate">Flüssigkeit</span>
           </div>
-          <span id="badge-liquid" class="mono text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase tracking-wider flex-shrink-0">
+          <span id="badge-liquid" class="mono text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wider flex-shrink-0">
             WÄHLEN
           </span>
         </button>
 
         <!-- BUTTON 3: SOLID -->
         <button id="btn-state-solid" onclick="toggleState('solid')" 
-                class="bg-white hover:bg-slate-50 text-brandDarkBlue border-2 border-slate-200 w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-lg text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99]">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-3 h-3 rounded-full bg-brandWarmOrange opacity-60 flex-shrink-0"></span>
+                class="bg-white hover:bg-slate-50 text-brandDarkBlue border-2 border-slate-200/90 w-full px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99] shadow-2xs">
+          <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <span class="w-3.5 h-3.5 rounded-full bg-brandWarmOrange flex-shrink-0 opacity-70"></span>
             <span id="title-solid" class="text-xs sm:text-sm font-bold truncate">Feststoff</span>
           </div>
-          <span id="badge-solid" class="mono text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase tracking-wider flex-shrink-0">
+          <span id="badge-solid" class="mono text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wider flex-shrink-0">
             WÄHLEN
           </span>
         </button>
 
       </div>
 
-      <!-- 2. ZUSTAND STATUS STRIP DIRECTLY UNDER BUTTONS -->
-      <div class="bg-white px-3 py-1.5 rounded-lg border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs flex-shrink-0">
-        <div class="flex items-center gap-2">
-          <span class="text-slate-500 font-semibold" id="lbl-status">Zustand:</span>
-          <span id="val-status" class="mono font-bold text-brandVividGreen">Freie Partikelbewegung</span>
+      <!-- 2. STATUS STRIP DIRECTLY UNDER BUTTONS -->
+      <div class="bg-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-slate-200 shadow-2xs flex items-center justify-between text-xs sm:text-sm flex-shrink-0">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-slate-500 font-semibold flex-shrink-0" id="lbl-status">Zustand:</span>
+          <span id="val-status" class="mono font-bold text-brandVividGreen truncate">Gasförmig (Freie Partikelbewegung)</span>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="hidden sm:inline text-slate-400 text-[11px]" id="lbl-behaviour">Eigenschaft:</span>
-          <span id="chamber-behavior" class="text-[11px] mono text-brandVividGreen font-semibold">Volle Expansion</span>
+        <div class="flex items-center gap-1.5 pl-2 flex-shrink-0">
+          <span class="hidden md:inline text-slate-400 text-xs" id="lbl-behaviour">Eigenschaft:</span>
+          <span id="chamber-behavior" class="text-xs mono text-brandVividGreen font-semibold">Volle Expansion</span>
         </div>
       </div>
 
-      <!-- 3. MOLECULAR SIMULATION CHAMBER DIRECTLY UNDER ZUSTAND -->
-      <section class="flex-1 min-h-0 bg-brandDarkBlue rounded-xl p-2 border border-slate-700 shadow-inner flex flex-col justify-between">
+      <!-- 3. MOLECULAR SIMULATION CHAMBER (Fills all remaining height) -->
+      <div id="chamberContainer" class="flex-1 w-full min-h-0 bg-brandDarkBlue rounded-xl p-1.5 sm:p-2 border border-slate-700/80 shadow-md flex flex-col justify-stretch relative">
         
-        <div class="relative w-full flex-1 rounded-lg border border-slate-600/90 chamber-vessel overflow-hidden flex flex-col min-h-0">
+        <div class="relative w-full h-full rounded-lg border border-slate-600/80 chamber-vessel overflow-hidden flex flex-col">
           
-          <!-- Interactive Molecule Canvas -->
-          <canvas id="moleculeCanvas" class="w-full h-full cursor-grab active:cursor-grabbing block touch-none z-10 flex-1"></canvas>
+          <!-- Full-res Canvas -->
+          <canvas id="moleculeCanvas" class="w-full h-full cursor-grab active:cursor-grabbing block touch-none z-10"></canvas>
 
           <!-- Interaction Hint -->
-          <div class="absolute bottom-1.5 left-2 z-20 pointer-events-none bg-brandDarkBlue/85 backdrop-blur-xs px-2 py-0.5 rounded border border-slate-600/70 text-[9px] text-slate-300 flex items-center gap-1.5">
+          <div class="absolute bottom-2 left-2 z-20 pointer-events-none bg-brandDarkBlue/90 backdrop-blur-xs px-2.5 py-1 rounded-md border border-slate-600/80 text-[10px] sm:text-xs text-slate-200 flex items-center gap-1.5 shadow-sm">
             <span>👆</span>
             <span id="hint-touch">Tippen oder ziehen zum Bewegen</span>
           </div>
 
           <!-- Impulse Agitation Button -->
-          <div class="absolute bottom-1.5 right-2 z-20">
-            <button onclick="toggleAgitation()" id="btn-impulse" class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-brandTuvBlue hover:bg-blue-600 active:scale-95 text-white transition flex items-center gap-1 shadow-sm">
-              ⚡ <span id="lbl-impulse">Impuls</span>
+          <div class="absolute bottom-2 right-2 z-20">
+            <button onclick="triggerImpulse()" id="btn-impulse" class="px-3 py-1 rounded-md text-xs font-bold bg-brandTuvBlue hover:bg-blue-600 active:scale-95 text-white transition flex items-center gap-1.5 shadow-md border border-blue-400/30">
+              ⚡ <span id="lbl-impulse">Bewegen</span>
             </button>
           </div>
 
         </div>
 
-      </section>
+      </div>
 
-    </main>
+    </div>
 
   </div>
 
   <script>
     const I18N = {
       de: {
-        uiTitle: "Verhalten unter Druck: Aggregatzustände",
+        uiTitle: "Aggregatzustände",
         badgeActive: "AKTIV",
         badgeSelect: "WÄHLEN",
         lblStatus: "Zustand:",
         lblBehaviour: "Eigenschaft:",
         hintTouch: "Tippen oder ziehen zum Bewegen",
-        lblImpulse: "Impuls",
+        lblImpulse: "Bewegen",
         states: {
           gas: {
             title: "Gas",
-            status: "Freie Partikelbewegung",
+            status: "Gasförmig (Freie Partikelbewegung)",
             behavior: "Volle Expansion"
           },
           liquid: {
             title: "Flüssigkeit",
-            status: "Fließend & kohärent",
+            status: "Flüssig (Fließend & kohärent)",
             behavior: "Konstantes Volumen"
           },
           solid: {
             title: "Feststoff",
-            status: "Gitterstruktur fixiert",
+            status: "Fest (Gitterstruktur fixiert)",
             behavior: "Formbeständig"
           }
         }
       },
       en: {
-        uiTitle: "Behaviour under Pressure: States of Matter",
+        uiTitle: "States of Matter",
         badgeActive: "ACTIVE",
         badgeSelect: "SELECT",
         lblStatus: "State:",
         lblBehaviour: "Property:",
-        hintTouch: "Touch or drag to agitate",
+        hintTouch: "Tap or drag to agitate",
         lblImpulse: "Agitate",
         states: {
           gas: {
             title: "Gas",
-            status: "Free particle movement",
+            status: "Gaseous (Free particle movement)",
             behavior: "Full expansion"
           },
           liquid: {
             title: "Liquid",
-            status: "Flowing & cohesive",
+            status: "Liquid (Flowing & coherent)",
             behavior: "Constant volume"
           },
           solid: {
             title: "Solid",
-            status: "Fixed lattice matrix",
+            status: "Solid (Fixed lattice structure)",
             behavior: "Rigid form"
           }
         }
       },
       fr: {
-        uiTitle: "Comportement sous pression : États de la matière",
+        uiTitle: "États de la matière",
         badgeActive: "ACTIF",
         badgeSelect: "CHOISIR",
         lblStatus: "État :",
@@ -249,17 +249,17 @@
         states: {
           gas: {
             title: "Gaz",
-            status: "Mouvement libre des particules",
+            status: "Gazeux (Mouvement libre des particules)",
             behavior: "Expansion complète"
           },
           liquid: {
             title: "Liquide",
-            status: "Fluide et cohésif",
+            status: "Liquide (Fluide & cohérent)",
             behavior: "Volume constant"
           },
           solid: {
             title: "Solide",
-            status: "Structure cristalline fixe",
+            status: "Solide (Structure en réseau fixe)",
             behavior: "Forme rigide"
           }
         }
@@ -275,9 +275,9 @@
       ['de', 'en', 'fr'].forEach(l => {
         const btn = document.getElementById(`lang-btn-${l}`);
         if (l === lang) {
-          btn.className = "px-2 py-0.5 rounded text-[11px] font-bold text-brandDarkBlue bg-brandVividGreen transition-colors";
+          btn.className = "px-2.5 py-1 rounded text-xs font-bold text-brandDarkBlue bg-brandVividGreen transition-colors shadow-xs";
         } else {
-          btn.className = "px-2 py-0.5 rounded text-[11px] font-medium text-slate-300 hover:text-white transition-colors";
+          btn.className = "px-2.5 py-1 rounded text-xs font-medium text-slate-300 hover:text-white transition-colors";
         }
       });
 
@@ -310,20 +310,20 @@
         const badge = document.getElementById(`badge-${s}`);
 
         if (s === state) {
-          btn.className = `btn-active-${s} w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-lg border-2 text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99]`;
+          btn.className = `btn-active-${s} w-full px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg border-2 text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99]`;
           badge.textContent = t.badgeActive;
           
           if (s === 'gas') {
-            badge.className = "mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-brandVividGreen text-brandDarkBlue uppercase tracking-wider flex-shrink-0";
+            badge.className = "mono text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-brandVividGreen text-brandDarkBlue uppercase tracking-wider flex-shrink-0";
           } else if (s === 'liquid') {
-            badge.className = "mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-blue-500 text-white uppercase tracking-wider flex-shrink-0";
+            badge.className = "mono text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-blue-500 text-white uppercase tracking-wider flex-shrink-0";
           } else {
-            badge.className = "mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-brandWarmOrange text-white uppercase tracking-wider flex-shrink-0";
+            badge.className = "mono text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-brandWarmOrange text-white uppercase tracking-wider flex-shrink-0";
           }
         } else {
-          btn.className = "bg-white hover:bg-slate-50 text-brandDarkBlue border-2 border-slate-200 w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-lg text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99]";
+          btn.className = "bg-white hover:bg-slate-50 text-brandDarkBlue border-2 border-slate-200/90 w-full px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99] shadow-2xs";
           badge.textContent = t.badgeSelect;
-          badge.className = "mono text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase tracking-wider flex-shrink-0";
+          badge.className = "mono text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wider flex-shrink-0";
         }
       });
 
@@ -334,13 +334,13 @@
       const status = document.getElementById('val-status');
 
       if (state === 'gas') {
-        behavior.className = "text-[11px] mono text-brandVividGreen font-semibold";
+        behavior.className = "text-xs mono text-brandVividGreen font-semibold";
         status.className = "mono font-bold text-brandVividGreen";
       } else if (state === 'liquid') {
-        behavior.className = "text-[11px] mono text-blue-400 font-semibold";
+        behavior.className = "text-xs mono text-brandTuvBlue font-semibold";
         status.className = "mono font-bold text-brandTuvBlue";
       } else {
-        behavior.className = "text-[11px] mono text-brandWarmOrange font-semibold";
+        behavior.className = "text-xs mono text-brandWarmOrange font-semibold";
         status.className = "mono font-bold text-brandWarmOrange";
       }
     }
@@ -351,21 +351,23 @@
     const ctx = canvas.getContext('2d');
     let width = 0;
     let height = 0;
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     function resizeCanvas() {
       const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
       width = rect.width;
       height = rect.height;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    const PARTICLE_COUNT = 48;
-    const PARTICLE_RADIUS = 6.5;
+    // Increased molecule size and crisp visual radius
+    const PARTICLE_COUNT = 44;
+    const PARTICLE_RADIUS = 8.5;
     const particles = [];
-    const pointer = { x: -1000, y: -1000, active: false, radius: 50 };
+    const pointer = { x: -1000, y: -1000, active: false, radius: 65 };
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       particles.push({
@@ -382,10 +384,10 @@
     function calculateSolidGrid() {
       const cols = 8;
       const rows = 6;
-      const spacing = PARTICLE_RADIUS * 2.35;
+      const spacing = PARTICLE_RADIUS * 2.3;
       const gridW = (cols - 1) * spacing;
       const startX = (width - gridW) / 2;
-      const startY = height - (rows * spacing) - 10;
+      const startY = height - (rows * (spacing * 0.9)) - 14;
 
       particles.forEach((p, idx) => {
         const col = idx % cols;
@@ -402,15 +404,15 @@
         if (state === 'gas') {
           p.x = PARTICLE_RADIUS + Math.random() * (width - PARTICLE_RADIUS * 2);
           p.y = PARTICLE_RADIUS + Math.random() * (height - PARTICLE_RADIUS * 2);
-          const speed = 3.5 + Math.random() * 1.5;
+          const speed = 3.6 + Math.random() * 1.6;
           const theta = Math.random() * Math.PI * 2;
           p.vx = Math.cos(theta) * speed;
           p.vy = Math.sin(theta) * speed;
         } else if (state === 'liquid') {
           p.x = width * 0.15 + Math.random() * (width * 0.7);
-          p.y = height * 0.45 + Math.random() * (height * 0.5);
-          p.vx = (Math.random() - 0.5) * 1.5;
-          p.vy = (Math.random() - 0.5) * 1.5;
+          p.y = height * 0.5 + Math.random() * (height * 0.45);
+          p.vx = (Math.random() - 0.5) * 1.6;
+          p.vy = (Math.random() - 0.5) * 1.6;
         } else {
           p.x = p.gridX + (Math.random() - 0.5) * 2;
           p.y = p.gridY + (Math.random() - 0.5) * 2;
@@ -420,9 +422,9 @@
       });
     }
 
-    function toggleAgitation() {
+    function triggerImpulse() {
       particles.forEach(p => {
-        const impulse = 5.0;
+        const impulse = 6.5;
         p.vx += (Math.random() - 0.5) * impulse;
         p.vy -= Math.random() * impulse;
       });
@@ -436,7 +438,7 @@
       const bottom = height - pad;
 
       if (currentState === 'gas') {
-        const targetSpeed = 3.6;
+        const targetSpeed = 3.8;
         for (let i = 0; i < particles.length; i++) {
           const p = particles[i];
           for (let j = i + 1; j < particles.length; j++) {
@@ -477,8 +479,8 @@
         }
 
       } else if (currentState === 'liquid') {
-        const gravity = 0.22;
-        const jitter = 0.35;
+        const gravity = 0.24;
+        const jitter = 0.4;
         for (let i = 0; i < particles.length; i++) {
           const p = particles[i];
           p.vy += gravity;
@@ -487,7 +489,7 @@
             const dx = p2.x - p.x;
             const dy = p2.y - p.y;
             const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-            const minDist = PARTICLE_RADIUS * 2.1;
+            const minDist = PARTICLE_RADIUS * 2.15;
             if (dist < minDist) {
               const overlap = (minDist - dist) * 0.5;
               const nx = dx / dist;
@@ -497,10 +499,10 @@
               p2.x += nx * overlap * 0.5;
               p2.y += ny * overlap * 0.5;
 
-              p.vx -= nx * 0.1;
-              p.vy -= ny * 0.1;
-              p2.vx += nx * 0.1;
-              p2.vy += ny * 0.1;
+              p.vx -= nx * 0.12;
+              p.vy -= ny * 0.12;
+              p2.vx += nx * 0.12;
+              p2.vy += ny * 0.12;
             }
           }
           p.vx += (Math.random() - 0.5) * jitter;
@@ -521,20 +523,20 @@
         particles.forEach(p => {
           const dx = p.gridX - p.x;
           const dy = p.gridY - p.y;
-          p.vx += dx * 0.22;
-          p.vy += dy * 0.22;
-          p.vx *= 0.72;
-          p.vy *= 0.72;
+          p.vx += dx * 0.24;
+          p.vy += dy * 0.24;
+          p.vx *= 0.7;
+          p.vy *= 0.7;
 
-          p.vx += (Math.random() - 0.5) * 0.35;
-          p.vy += (Math.random() - 0.5) * 0.35;
+          p.vx += (Math.random() - 0.5) * 0.38;
+          p.vy += (Math.random() - 0.5) * 0.38;
 
           p.x += p.vx;
           p.y += p.vy;
         });
       }
 
-      // Pointer Interactive Agitation
+      // User Pointer Agitation
       if (pointer.active) {
         particles.forEach(p => {
           const dx = p.x - pointer.x;
@@ -543,7 +545,7 @@
           if (dist < pointer.radius && dist > 0) {
             const force = (pointer.radius - dist) / pointer.radius;
             const angle = Math.atan2(dy, dx);
-            const imp = force * 6.0;
+            const imp = force * 7.5;
             p.vx += Math.cos(angle) * imp;
             p.vy += Math.sin(angle) * imp;
           }
@@ -554,10 +556,10 @@
     function render() {
       ctx.clearRect(0, 0, width, height);
 
-      // Faint background chamber grid
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      // Fine chamber grid
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
       ctx.lineWidth = 1;
-      const step = 16;
+      const step = 20;
       for (let x = 0; x < width; x += step) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
       }
@@ -567,9 +569,9 @@
 
       // Solid crystal lattice bonds
       if (currentState === 'solid') {
-        ctx.strokeStyle = 'rgba(255, 119, 75, 0.26)';
-        ctx.lineWidth = 1.2;
-        const bondLimit = PARTICLE_RADIUS * 2.7;
+        ctx.strokeStyle = 'rgba(255, 119, 75, 0.32)';
+        ctx.lineWidth = 1.5;
+        const bondLimit = PARTICLE_RADIUS * 2.8;
         for (let i = 0; i < particles.length; i++) {
           for (let j = i + 1; j < particles.length; j++) {
             const dx = particles[i].x - particles[j].x;
@@ -586,22 +588,22 @@
 
       // Gas velocity vector trails
       if (currentState === 'gas') {
-        ctx.strokeStyle = 'rgba(2, 236, 166, 0.35)';
-        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = 'rgba(2, 236, 166, 0.45)';
+        ctx.lineWidth = 1.6;
         particles.forEach(p => {
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p.x - p.vx * 2.8, p.y - p.vy * 2.8);
+          ctx.lineTo(p.x - p.vx * 3.2, p.y - p.vy * 3.2);
           ctx.stroke();
         });
       }
 
-      // Particle rendering with corporate colors
+      // Particle rendering with corporate colors & distinct glow
       particles.forEach(p => {
         const grad = ctx.createRadialGradient(
           p.x - p.radius * 0.35,
           p.y - p.radius * 0.35,
-          p.radius * 0.1,
+          p.radius * 0.12,
           p.x,
           p.y,
           p.radius
@@ -609,17 +611,17 @@
 
         if (currentState === 'gas') {
           // Vivid Green (#02ECA6)
-          grad.addColorStop(0, '#a7fbe3');
+          grad.addColorStop(0, '#c7ffef');
           grad.addColorStop(0.45, '#02ECA6');
-          grad.addColorStop(1, '#008b60');
+          grad.addColorStop(1, '#007e56');
         } else if (currentState === 'liquid') {
           // TÜV SÜD Blue (#0046AD)
-          grad.addColorStop(0, '#9dc1ff');
+          grad.addColorStop(0, '#b8d3ff');
           grad.addColorStop(0.5, '#0046AD');
           grad.addColorStop(1, '#00255c');
         } else {
           // Warm Orange (#FF774B)
-          grad.addColorStop(0, '#ffcebf');
+          grad.addColorStop(0, '#ffe2d9');
           grad.addColorStop(0.5, '#FF774B');
           grad.addColorStop(1, '#a63310');
         }
@@ -628,14 +630,14 @@
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = grad;
         ctx.shadowColor = currentState === 'gas' ? '#02ECA6' : (currentState === 'solid' ? '#FF774B' : '#0046AD');
-        ctx.shadowBlur = currentState === 'gas' ? 6 : 3;
+        ctx.shadowBlur = currentState === 'gas' ? 9 : 4;
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Specular reflection highlight
+        // Specular highlight spot
         ctx.beginPath();
-        ctx.arc(p.x - p.radius * 0.35, p.y - p.radius * 0.35, p.radius * 0.22, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.arc(p.x - p.radius * 0.35, p.y - p.radius * 0.35, p.radius * 0.24, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
         ctx.fill();
       });
     }
@@ -684,10 +686,12 @@
         pointer.x = -1000; pointer.y = -1000;
       });
 
-      window.addEventListener('resize', () => {
+      // Auto-adapt immediately to any iframe dimensions without reload
+      const resizeObserver = new ResizeObserver(() => {
         resizeCanvas();
         calculateSolidGrid();
       });
+      resizeObserver.observe(document.getElementById('chamberContainer'));
     }
 
     window.addEventListener('load', () => {
