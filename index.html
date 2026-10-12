@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aggregatzustände unter Druck | Easygenerator Widget</title>
-  <!-- Tailwind CSS -->
+  <title>Aggregatzustände - Interaktive Simulation</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -36,7 +36,7 @@
     html, body {
       height: 100%;
       width: 100%;
-      overflow: hidden; /* Avoid iframe scrollbars */
+      overflow: hidden; /* Embed guard to eliminate vertical scrollbars */
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: #F2EFED;
       color: #0B253B;
@@ -46,236 +46,136 @@
     .mono {
       font-family: 'JetBrains Mono', monospace;
     }
-    .chamber-bg {
-      background: radial-gradient(circle at 50% 25%, #143552 0%, #0B253B 100%);
-      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.6);
+    .chamber-vessel {
+      background: radial-gradient(ellipse at 50% 20%, #173b5a 0%, #0B253B 100%);
+      box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6);
     }
-    /* Fast, smooth accordion height transition */
-    .acc-panel {
-      display: grid;
-      grid-template-rows: 0fr;
-      transition: grid-template-rows 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
-      opacity: 0;
+    /* Active Button States */
+    .btn-active-gas {
+      background-color: #0B253B !important;
+      color: #ffffff !important;
+      border-color: #02ECA6 !important;
+      box-shadow: 0 4px 12px rgba(2, 236, 166, 0.25);
     }
-    .acc-panel.expanded {
-      grid-template-rows: 1fr;
-      opacity: 1;
+    .btn-active-liquid {
+      background-color: #0B253B !important;
+      color: #ffffff !important;
+      border-color: #0046AD !important;
+      box-shadow: 0 4px 12px rgba(0, 70, 173, 0.3);
     }
-    .acc-inner {
-      overflow: hidden;
-    }
-    /* State border accents */
-    .card-active-gas {
-      border-left: 4px solid #02ECA6 !important;
-      background-color: #ffffff !important;
-      box-shadow: 0 4px 12px rgba(11, 37, 59, 0.08);
-    }
-    .card-active-liquid {
-      border-left: 4px solid #0046AD !important;
-      background-color: #ffffff !important;
-      box-shadow: 0 4px 12px rgba(11, 37, 59, 0.08);
-    }
-    .card-active-solid {
-      border-left: 4px solid #FF774B !important;
-      background-color: #ffffff !important;
-      box-shadow: 0 4px 12px rgba(11, 37, 59, 0.08);
-    }
-    .card-inactive {
-      border-left: 4px solid transparent !important;
-      background-color: rgba(255, 255, 255, 0.7);
-    }
-    .card-inactive:hover {
-      background-color: #ffffff;
-    }
-    .chevron {
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .chevron.open {
-      transform: rotate(180deg);
+    .btn-active-solid {
+      background-color: #0B253B !important;
+      color: #ffffff !important;
+      border-color: #FF774B !important;
+      box-shadow: 0 4px 12px rgba(255, 119, 75, 0.25);
     }
   </style>
 </head>
 <body class="p-1 sm:p-2 h-full flex flex-col justify-center">
 
-  <div class="w-full h-full max-h-[490px] bg-white rounded-xl shadow-lg border border-slate-200 flex flex-col overflow-hidden">
+  <!-- Main Card Container: Max height constrained for Easygenerator iframes -->
+  <div class="w-full h-full max-h-[480px] bg-white rounded-xl shadow-md border border-slate-200/90 flex flex-col overflow-hidden">
     
-    <!-- Ultra-compact Header Bar -->
-    <header class="bg-brandDarkBlue text-white px-3.5 py-2 flex items-center justify-between flex-shrink-0 border-b-2 border-brandVividGreen">
+    <!-- Top Header Bar with Language Switch -->
+    <header class="bg-brandDarkBlue text-white px-3 sm:px-4 py-2 flex items-center justify-between flex-shrink-0 border-b-2 border-brandVividGreen">
       <div class="flex items-center gap-2">
-        <span class="w-6 h-6 rounded-lg bg-brandTuvBlue flex items-center justify-center text-white text-xs shadow-sm">
-          ⚗️
-        </span>
-        <h1 id="ui-title" class="text-xs sm:text-sm font-bold text-white tracking-tight">
+        <span class="w-2 h-2 rounded-full bg-brandVividGreen animate-pulse"></span>
+        <h1 id="ui-title" class="text-xs sm:text-sm font-semibold tracking-tight text-slate-100">
           Verhalten unter Druck: Aggregatzustände
         </h1>
       </div>
 
-      <!-- Language Selector -->
-      <div class="flex items-center bg-slate-900/80 p-0.5 rounded-lg border border-slate-700">
-        <button onclick="setLanguage('de')" id="lang-btn-de" class="px-2 py-0.5 rounded text-[11px] font-bold text-brandDarkBlue bg-brandVividGreen">
+      <!-- Multilingual Selector (DE / EN / FR) -->
+      <div class="flex items-center bg-slate-900/90 p-0.5 rounded-lg border border-slate-700/70">
+        <button onclick="setLanguage('de')" id="lang-btn-de" class="px-2 py-0.5 rounded text-[11px] font-bold text-brandDarkBlue bg-brandVividGreen transition-colors">
           DE
         </button>
-        <button onclick="setLanguage('en')" id="lang-btn-en" class="px-2 py-0.5 rounded text-[11px] font-semibold text-slate-300 hover:text-white">
+        <button onclick="setLanguage('en')" id="lang-btn-en" class="px-2 py-0.5 rounded text-[11px] font-medium text-slate-300 hover:text-white transition-colors">
           EN
         </button>
-        <button onclick="setLanguage('fr')" id="lang-btn-fr" class="px-2 py-0.5 rounded text-[11px] font-semibold text-slate-300 hover:text-white">
+        <button onclick="setLanguage('fr')" id="lang-btn-fr" class="px-2 py-0.5 rounded text-[11px] font-medium text-slate-300 hover:text-white transition-colors">
           FR
         </button>
       </div>
     </header>
 
-    <!-- Side-by-Side Main Body: 50% Content / 50% Chamber -->
-    <main class="grid grid-cols-2 gap-3 p-3 flex-1 min-h-0 bg-brandWarmGrey/40">
+    <!-- Main Content Flow (Buttons -> Zustand Strip -> Molecular Chamber) -->
+    <main class="flex flex-col flex-1 p-2.5 sm:p-3 gap-2 min-h-0 bg-brandWarmGrey/40 overflow-hidden">
       
-      <!-- LEFT COLUMN: Intro & Accordion -->
-      <section class="flex flex-col justify-between h-full min-h-0 overflow-hidden">
+      <!-- 1. THREE BUTTONS SIDE BY SIDE -->
+      <div class="grid grid-cols-3 gap-2 sm:gap-3 flex-shrink-0">
         
-        <!-- Compact Context Intro -->
-        <div class="bg-white/80 p-2 rounded-lg border border-slate-200/90 mb-1.5 flex-shrink-0">
-          <p id="course-intro-text" class="text-[11px] text-brandDarkBlue font-medium leading-snug">
-            Druckgeräte enthalten in der Regel Gase oder Flüssigkeiten. Die grundlegenden Aggregatzustände sind wichtig für das Verständnis des Verhaltens unter Druck:
-          </p>
+        <!-- BUTTON 1: GAS -->
+        <button id="btn-state-gas" onclick="toggleState('gas')" 
+                class="btn-active-gas w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-lg border-2 text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99]">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-3 h-3 rounded-full bg-brandVividGreen flex-shrink-0"></span>
+            <span id="title-gas" class="text-xs sm:text-sm font-bold truncate">Gas</span>
+          </div>
+          <span id="badge-gas" class="mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-brandVividGreen text-brandDarkBlue uppercase tracking-wider flex-shrink-0">
+            AKTIV
+          </span>
+        </button>
+
+        <!-- BUTTON 2: LIQUID -->
+        <button id="btn-state-liquid" onclick="toggleState('liquid')" 
+                class="bg-white hover:bg-slate-50 text-brandDarkBlue border-2 border-slate-200 w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-lg text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99]">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-3 h-3 rounded-full bg-brandTuvBlue opacity-60 flex-shrink-0"></span>
+            <span id="title-liquid" class="text-xs sm:text-sm font-bold truncate">Flüssigkeit</span>
+          </div>
+          <span id="badge-liquid" class="mono text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase tracking-wider flex-shrink-0">
+            WÄHLEN
+          </span>
+        </button>
+
+        <!-- BUTTON 3: SOLID -->
+        <button id="btn-state-solid" onclick="toggleState('solid')" 
+                class="bg-white hover:bg-slate-50 text-brandDarkBlue border-2 border-slate-200 w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-lg text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99]">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-3 h-3 rounded-full bg-brandWarmOrange opacity-60 flex-shrink-0"></span>
+            <span id="title-solid" class="text-xs sm:text-sm font-bold truncate">Feststoff</span>
+          </div>
+          <span id="badge-solid" class="mono text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase tracking-wider flex-shrink-0">
+            WÄHLEN
+          </span>
+        </button>
+
+      </div>
+
+      <!-- 2. ZUSTAND STATUS STRIP DIRECTLY UNDER BUTTONS -->
+      <div class="bg-white px-3 py-1.5 rounded-lg border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500 font-semibold" id="lbl-status">Zustand:</span>
+          <span id="val-status" class="mono font-bold text-brandVividGreen">Freie Partikelbewegung</span>
         </div>
-
-        <!-- 3 Clickable Accordion Items (Gas, Liquid, Solid) -->
-        <div class="flex flex-col gap-1.5 flex-1 justify-between min-h-0">
-          
-          <!-- ITEM 1: GAS -->
-          <div id="card-gas" onclick="toggleState('gas')" role="button" tabindex="0" 
-               class="card-active-gas px-2.5 py-1.5 rounded-lg cursor-pointer border border-slate-200 transition-all flex flex-col justify-center">
-            <div class="flex items-center justify-between">
-              <span id="title-gas" class="text-xs font-bold text-brandTuvBlue">Gas</span>
-              <div class="flex items-center gap-1.5">
-                <span id="badge-gas" class="mono text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-brandVividGreen/20 text-brandDarkBlue">AKTIV</span>
-                <svg id="chevron-gas" class="w-3.5 h-3.5 text-brandTuvBlue chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </div>
-            </div>
-            <div id="collapse-gas" class="acc-panel expanded">
-              <div class="acc-inner pt-1">
-                <ul class="text-[11px] text-slate-700 space-y-0.5 border-t border-slate-100 pt-1 leading-tight">
-                  <li class="flex items-center gap-1.5">
-                    <span class="text-brandVividGreen font-black text-xs leading-none">•</span>
-                    <span id="gas-bullet-1">Hohe Kompressibilität</span>
-                  </li>
-                  <li class="flex items-center gap-1.5">
-                    <span class="text-brandVividGreen font-black text-xs leading-none">•</span>
-                    <span id="gas-bullet-2">Füllt jeden Raum aus</span>
-                  </li>
-                  <li class="flex items-center gap-1.5">
-                    <span class="text-brandVividGreen font-black text-xs leading-none">•</span>
-                    <span id="gas-bullet-3">Enthält viel gespeicherte Energie</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- ITEM 2: LIQUID -->
-          <div id="card-liquid" onclick="toggleState('liquid')" role="button" tabindex="0" 
-               class="card-inactive px-2.5 py-1.5 rounded-lg cursor-pointer border border-slate-200 transition-all flex flex-col justify-center">
-            <div class="flex items-center justify-between">
-              <span id="title-liquid" class="text-xs font-bold text-brandTuvBlue">Flüssigkeit</span>
-              <div class="flex items-center gap-1.5">
-                <span id="badge-liquid" class="mono text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-500">WÄHLEN</span>
-                <svg id="chevron-liquid" class="w-3.5 h-3.5 text-slate-400 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </div>
-            </div>
-            <div id="collapse-liquid" class="acc-panel">
-              <div class="acc-inner pt-1">
-                <ul class="text-[11px] text-slate-700 space-y-0.5 border-t border-slate-100 pt-1 leading-tight">
-                  <li class="flex items-center gap-1.5">
-                    <span class="text-brandTuvBlue font-black text-xs leading-none">•</span>
-                    <span id="liquid-bullet-1">Nahezu inkompressibel</span>
-                  </li>
-                  <li class="flex items-center gap-1.5">
-                    <span class="text-brandTuvBlue font-black text-xs leading-none">•</span>
-                    <span id="liquid-bullet-2">Konstant bleibendes Volumen</span>
-                  </li>
-                  <li class="flex items-center gap-1.5">
-                    <span class="text-brandTuvBlue font-black text-xs leading-none">•</span>
-                    <span id="liquid-bullet-3">Energie wirkt primär auf die Gefäßwand</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- ITEM 3: SOLID -->
-          <div id="card-solid" onclick="toggleState('solid')" role="button" tabindex="0" 
-               class="card-inactive px-2.5 py-1.5 rounded-lg cursor-pointer border border-slate-200 transition-all flex flex-col justify-center">
-            <div class="flex items-center justify-between">
-              <span id="title-solid" class="text-xs font-bold text-brandTuvBlue">Feststoff</span>
-              <div class="flex items-center gap-1.5">
-                <span id="badge-solid" class="mono text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-500">WÄHLEN</span>
-                <svg id="chevron-solid" class="w-3.5 h-3.5 text-slate-400 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </div>
-            </div>
-            <div id="collapse-solid" class="acc-panel">
-              <div class="acc-inner pt-1">
-                <ul class="text-[11px] text-slate-700 space-y-0.5 border-t border-slate-100 pt-1 leading-tight">
-                  <li class="flex items-center gap-1.5">
-                    <span class="text-brandWarmOrange font-black text-xs leading-none">•</span>
-                    <span id="solid-bullet-1">Sehr geringe Kompressibilität</span>
-                  </li>
-                  <li class="flex items-center gap-1.5">
-                    <span class="text-brandWarmOrange font-black text-xs leading-none">•</span>
-                    <span id="solid-bullet-2">Keine wesentlichen Druckeffekte</span>
-                  </li>
-                  <li class="flex items-center gap-1.5">
-                    <span class="text-brandWarmOrange font-black text-xs leading-none">•</span>
-                    <span id="solid-bullet-3">Relevant nur als Partikel im Medium</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
+        <div class="flex items-center gap-2">
+          <span class="hidden sm:inline text-slate-400 text-[11px]" id="lbl-behaviour">Eigenschaft:</span>
+          <span id="chamber-behavior" class="text-[11px] mono text-brandVividGreen font-semibold">Volle Expansion</span>
         </div>
-      </section>
+      </div>
 
-      <!-- RIGHT COLUMN: Interactive Molecular Simulation Chamber -->
-      <section class="h-full flex flex-col min-h-0 bg-brandDarkBlue rounded-xl p-2 border border-slate-700 shadow-inner justify-between">
+      <!-- 3. MOLECULAR SIMULATION CHAMBER DIRECTLY UNDER ZUSTAND -->
+      <section class="flex-1 min-h-0 bg-brandDarkBlue rounded-xl p-2 border border-slate-700 shadow-inner flex flex-col justify-between">
         
-        <!-- Live Chamber Vessel -->
-        <div class="relative w-full flex-1 rounded-lg border border-brandTuvBlue chamber-bg overflow-hidden flex flex-col min-h-0">
+        <div class="relative w-full flex-1 rounded-lg border border-slate-600/90 chamber-vessel overflow-hidden flex flex-col min-h-0">
           
-          <!-- Telemetry Header inside Chamber -->
-          <div class="z-20 px-2.5 py-1 bg-brandDarkBlue/85 border-b border-slate-700/70 flex items-center justify-between text-[10px] font-mono text-slate-300">
-            <div class="flex items-center gap-1.5">
-              <span id="status-dot" class="w-2 h-2 rounded-full bg-brandVividGreen animate-pulse"></span>
-              <span id="chamber-tag" class="font-bold text-white tracking-wider">GAS</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span><span id="lbl-pressure">Druck</span>: <strong id="val-pressure" class="text-brandVividGreen font-bold">3.2 bar</strong></span>
-              <span><span id="lbl-energy">Kinetik</span>: <strong id="val-energy" class="text-brandWarmOrange font-bold">Hoch</strong></span>
-            </div>
-          </div>
-
-          <!-- Molecular Canvas -->
+          <!-- Interactive Molecule Canvas -->
           <canvas id="moleculeCanvas" class="w-full h-full cursor-grab active:cursor-grabbing block touch-none z-10 flex-1"></canvas>
 
-          <!-- Interaction Hint Pill -->
-          <div class="absolute bottom-1.5 left-1.5 z-20 pointer-events-none bg-brandDarkBlue/80 backdrop-blur px-2 py-0.5 rounded border border-slate-600/60 text-[9px] text-slate-300 flex items-center gap-1">
+          <!-- Interaction Hint -->
+          <div class="absolute bottom-1.5 left-2 z-20 pointer-events-none bg-brandDarkBlue/85 backdrop-blur-xs px-2 py-0.5 rounded border border-slate-600/70 text-[9px] text-slate-300 flex items-center gap-1.5">
             <span>👆</span>
-            <span id="hint-touch">Tippen zum Stören</span>
+            <span id="hint-touch">Tippen oder ziehen zum Bewegen</span>
           </div>
-        </div>
 
-        <!-- Compact Bottom Action Bar -->
-        <div class="mt-1.5 px-2 py-1 bg-slate-900/90 rounded-lg border border-slate-800 flex items-center justify-between gap-2 text-[10px]">
-          <div class="flex items-center gap-1.5 min-w-0">
-            <span id="summary-icon" class="text-xs">💨</span>
-            <span id="summary-desc" class="text-slate-300 truncate font-medium">Hohe Expansion & kinetischer Stoßdruck</span>
+          <!-- Impulse Agitation Button -->
+          <div class="absolute bottom-1.5 right-2 z-20">
+            <button onclick="toggleAgitation()" id="btn-impulse" class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-brandTuvBlue hover:bg-blue-600 active:scale-95 text-white transition flex items-center gap-1 shadow-sm">
+              ⚡ <span id="lbl-impulse">Impuls</span>
+            </button>
           </div>
-          <button onclick="toggleAgitation()" id="btn-impulse" class="px-2 py-0.5 rounded text-[10px] font-bold bg-brandTuvBlue hover:bg-blue-600 active:scale-95 text-white flex-shrink-0 transition">
-            ⚡ Impuls
-          </button>
+
         </div>
 
       </section>
@@ -288,109 +188,79 @@
     const I18N = {
       de: {
         uiTitle: "Verhalten unter Druck: Aggregatzustände",
-        courseIntro: "Druckgeräte enthalten in der Regel Gase oder Flüssigkeiten. Die grundlegenden Aggregatzustände sind wichtig für das Verständnis des Verhaltens unter Druck:",
         badgeActive: "AKTIV",
         badgeSelect: "WÄHLEN",
-        lblPressure: "Druck",
-        lblEnergy: "Kinetik",
-        energyHigh: "Hoch",
-        energyMedium: "Mittel",
-        energyLow: "Niedrig",
-        hintTouch: "Tippen/Ziehen zum Stören",
-        btnImpulse: "⚡ Impuls",
+        lblStatus: "Zustand:",
+        lblBehaviour: "Eigenschaft:",
+        hintTouch: "Tippen oder ziehen zum Bewegen",
+        lblImpulse: "Impuls",
         states: {
           gas: {
             title: "Gas",
-            bullets: ["Hohe Kompressibilität", "Füllt jeden Raum aus", "Enthält viel gespeicherte Energie"],
-            tag: "GAS",
-            pressure: "3.2 bar",
-            summary: "Hohe Expansion & kinetischer Stoßdruck"
+            status: "Freie Partikelbewegung",
+            behavior: "Volle Expansion"
           },
           liquid: {
             title: "Flüssigkeit",
-            bullets: ["Nahezu inkompressibel", "Konstant bleibendes Volumen", "Energie wirkt primär auf die Gefäßwand"],
-            tag: "FLÜSSIGKEIT",
-            pressure: "1.0 bar (Hydraulisch)",
-            summary: "Gleitende Moleküle mit fester Dichte"
+            status: "Fließend & kohärent",
+            behavior: "Konstantes Volumen"
           },
           solid: {
             title: "Feststoff",
-            bullets: ["Sehr geringe Kompressibilität", "Keine wesentlichen Druckeffekte", "Relevant nur als Partikel im Medium"],
-            tag: "FESTSTOFF",
-            pressure: "0.1 bar (Statisch)",
-            summary: "Festes Gitter ohne Volumenausdehnung"
+            status: "Gitterstruktur fixiert",
+            behavior: "Formbeständig"
           }
         }
       },
       en: {
-        uiTitle: "Behaviour Under Pressure: States of Matter",
-        courseIntro: "Pressure equipment generally contains gases or liquids. Understanding the fundamental states of matter is essential for comprehending behaviour under pressure:",
+        uiTitle: "Behaviour under Pressure: States of Matter",
         badgeActive: "ACTIVE",
         badgeSelect: "SELECT",
-        lblPressure: "Pressure",
-        lblEnergy: "Kinetics",
-        energyHigh: "High",
-        energyMedium: "Medium",
-        energyLow: "Low",
-        hintTouch: "Touch/drag to agitate",
-        btnImpulse: "⚡ Agitate",
+        lblStatus: "State:",
+        lblBehaviour: "Property:",
+        hintTouch: "Touch or drag to agitate",
+        lblImpulse: "Agitate",
         states: {
           gas: {
             title: "Gas",
-            bullets: ["High compressibility", "Fills any volume", "Contains significant stored energy"],
-            tag: "GAS",
-            pressure: "3.2 bar",
-            summary: "High expansion & kinetic wall pressure"
+            status: "Free particle movement",
+            behavior: "Full expansion"
           },
           liquid: {
             title: "Liquid",
-            bullets: ["Virtually incompressible", "Constant volume", "Energy acts primarily on vessel wall"],
-            tag: "LIQUID",
-            pressure: "1.0 bar (Hydraulic)",
-            summary: "Cohesive fluid flowing with fixed volume"
+            status: "Flowing & cohesive",
+            behavior: "Constant volume"
           },
           solid: {
             title: "Solid",
-            bullets: ["Very low compressibility", "No significant pressure effects", "Relevant only as particles in medium"],
-            tag: "SOLID",
-            pressure: "0.1 bar (Static)",
-            summary: "Rigid lattice with fixed structure"
+            status: "Fixed lattice matrix",
+            behavior: "Rigid form"
           }
         }
       },
       fr: {
         uiTitle: "Comportement sous pression : États de la matière",
-        courseIntro: "Les équipements sous pression contiennent généralement des gaz ou des liquides. Les états fondamentaux sont essentiels pour comprendre le comportement sous pression :",
         badgeActive: "ACTIF",
         badgeSelect: "CHOISIR",
-        lblPressure: "Pression",
-        lblEnergy: "Cinétique",
-        energyHigh: "Élevée",
-        energyMedium: "Moyenne",
-        energyLow: "Faible",
-        hintTouch: "Glisser pour agiter",
-        btnImpulse: "⚡ Agiter",
+        lblStatus: "État :",
+        lblBehaviour: "Propriété :",
+        hintTouch: "Toucher ou glisser pour agiter",
+        lblImpulse: "Agiter",
         states: {
           gas: {
             title: "Gaz",
-            bullets: ["Haute compressibilité", "Occupe tout le volume", "Contient beaucoup d'énergie stockée"],
-            tag: "GAZ",
-            pressure: "3.2 bar",
-            summary: "Forte expansion & chocs cinétiques"
+            status: "Mouvement libre des particules",
+            behavior: "Expansion complète"
           },
           liquid: {
             title: "Liquide",
-            bullets: ["Quasi-incompressible", "Volume constant", "L'énergie agit sur la paroi du récipient"],
-            tag: "LIQUIDE",
-            pressure: "1.0 bar (Hydraulique)",
-            summary: "Fluide cohésif coulant à volume fixe"
+            status: "Fluide et cohésif",
+            behavior: "Volume constant"
           },
           solid: {
             title: "Solide",
-            bullets: ["Très faible compressibilité", "Aucun effet de pression notable", "Pertinent comme particules dans le fluide"],
-            tag: "SOLIDE",
-            pressure: "0.1 bar (Statique)",
-            summary: "Réseau rigide sans expansion volumique"
+            status: "Structure cristalline fixe",
+            behavior: "Forme rigide"
           }
         }
       }
@@ -405,34 +275,22 @@
       ['de', 'en', 'fr'].forEach(l => {
         const btn = document.getElementById(`lang-btn-${l}`);
         if (l === lang) {
-          btn.className = "px-2 py-0.5 rounded text-[11px] font-bold text-brandDarkBlue bg-brandVividGreen";
+          btn.className = "px-2 py-0.5 rounded text-[11px] font-bold text-brandDarkBlue bg-brandVividGreen transition-colors";
         } else {
-          btn.className = "px-2 py-0.5 rounded text-[11px] font-semibold text-slate-300 hover:text-white";
+          btn.className = "px-2 py-0.5 rounded text-[11px] font-medium text-slate-300 hover:text-white transition-colors";
         }
       });
 
       const t = I18N[lang];
       document.getElementById('ui-title').textContent = t.uiTitle;
-      document.getElementById('course-intro-text').textContent = t.courseIntro;
-      document.getElementById('lbl-pressure').textContent = t.lblPressure;
-      document.getElementById('lbl-energy').textContent = t.lblEnergy;
+      document.getElementById('lbl-status').textContent = t.lblStatus;
+      document.getElementById('lbl-behaviour').textContent = t.lblBehaviour;
       document.getElementById('hint-touch').textContent = t.hintTouch;
-      document.getElementById('btn-impulse').textContent = t.btnImpulse;
+      document.getElementById('lbl-impulse').textContent = t.lblImpulse;
 
       document.getElementById('title-gas').textContent = t.states.gas.title;
-      document.getElementById('gas-bullet-1').textContent = t.states.gas.bullets[0];
-      document.getElementById('gas-bullet-2').textContent = t.states.gas.bullets[1];
-      document.getElementById('gas-bullet-3').textContent = t.states.gas.bullets[2];
-
       document.getElementById('title-liquid').textContent = t.states.liquid.title;
-      document.getElementById('liquid-bullet-1').textContent = t.states.liquid.bullets[0];
-      document.getElementById('liquid-bullet-2').textContent = t.states.liquid.bullets[1];
-      document.getElementById('liquid-bullet-3').textContent = t.states.liquid.bullets[2];
-
       document.getElementById('title-solid').textContent = t.states.solid.title;
-      document.getElementById('solid-bullet-1').textContent = t.states.solid.bullets[0];
-      document.getElementById('solid-bullet-2').textContent = t.states.solid.bullets[1];
-      document.getElementById('solid-bullet-3').textContent = t.states.solid.bullets[2];
 
       applyStateUI(currentState);
     }
@@ -448,50 +306,42 @@
       const data = t.states[state];
 
       ['gas', 'liquid', 'solid'].forEach(s => {
-        const card = document.getElementById(`card-${s}`);
+        const btn = document.getElementById(`btn-state-${s}`);
         const badge = document.getElementById(`badge-${s}`);
-        const collapse = document.getElementById(`collapse-${s}`);
-        const chevron = document.getElementById(`chevron-${s}`);
 
         if (s === state) {
-          card.className = `card-active-${s} px-2.5 py-1.5 rounded-lg cursor-pointer border border-slate-300 transition-all flex flex-col justify-center`;
+          btn.className = `btn-active-${s} w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-lg border-2 text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99]`;
           badge.textContent = t.badgeActive;
-          badge.className = "mono text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-brandVividGreen/20 text-brandDarkBlue";
-          collapse.classList.add('expanded');
-          chevron.classList.add('open');
+          
+          if (s === 'gas') {
+            badge.className = "mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-brandVividGreen text-brandDarkBlue uppercase tracking-wider flex-shrink-0";
+          } else if (s === 'liquid') {
+            badge.className = "mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-blue-500 text-white uppercase tracking-wider flex-shrink-0";
+          } else {
+            badge.className = "mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-brandWarmOrange text-white uppercase tracking-wider flex-shrink-0";
+          }
         } else {
-          card.className = "card-inactive px-2.5 py-1.5 rounded-lg cursor-pointer border border-slate-200 transition-all flex flex-col justify-center";
+          btn.className = "bg-white hover:bg-slate-50 text-brandDarkBlue border-2 border-slate-200 w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-lg text-left transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.99]";
           badge.textContent = t.badgeSelect;
-          badge.className = "mono text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-500";
-          collapse.classList.remove('expanded');
-          chevron.classList.remove('open');
+          badge.className = "mono text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase tracking-wider flex-shrink-0";
         }
       });
 
-      // Update Chamber Telemetry
-      document.getElementById('chamber-tag').textContent = data.tag;
-      document.getElementById('val-pressure').textContent = data.pressure;
-      document.getElementById('summary-desc').textContent = data.summary;
+      document.getElementById('chamber-behavior').textContent = data.behavior;
+      document.getElementById('val-status').textContent = data.status;
 
-      const dot = document.getElementById('status-dot');
-      const icon = document.getElementById('summary-icon');
-      const energy = document.getElementById('val-energy');
+      const behavior = document.getElementById('chamber-behavior');
+      const status = document.getElementById('val-status');
 
       if (state === 'gas') {
-        dot.className = "w-2 h-2 rounded-full bg-brandVividGreen animate-pulse";
-        icon.textContent = "💨";
-        energy.textContent = t.energyHigh;
-        energy.className = "text-brandVividGreen font-bold";
+        behavior.className = "text-[11px] mono text-brandVividGreen font-semibold";
+        status.className = "mono font-bold text-brandVividGreen";
       } else if (state === 'liquid') {
-        dot.className = "w-2 h-2 rounded-full bg-sky-400 animate-pulse";
-        icon.textContent = "💧";
-        energy.textContent = t.energyMedium;
-        energy.className = "text-sky-300 font-bold";
+        behavior.className = "text-[11px] mono text-blue-400 font-semibold";
+        status.className = "mono font-bold text-brandTuvBlue";
       } else {
-        dot.className = "w-2 h-2 rounded-full bg-brandWarmOrange";
-        icon.textContent = "🧊";
-        energy.textContent = t.energyLow;
-        energy.className = "text-brandWarmOrange font-bold";
+        behavior.className = "text-[11px] mono text-brandWarmOrange font-semibold";
+        status.className = "mono font-bold text-brandWarmOrange";
       }
     }
   </script>
@@ -512,10 +362,10 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    const PARTICLE_COUNT = 45;
+    const PARTICLE_COUNT = 48;
     const PARTICLE_RADIUS = 6.5;
     const particles = [];
-    const pointer = { x: -1000, y: -1000, active: false, radius: 45 };
+    const pointer = { x: -1000, y: -1000, active: false, radius: 50 };
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       particles.push({
@@ -530,9 +380,9 @@
     }
 
     function calculateSolidGrid() {
-      const cols = 9;
-      const rows = 5;
-      const spacing = PARTICLE_RADIUS * 2.3;
+      const cols = 8;
+      const rows = 6;
+      const spacing = PARTICLE_RADIUS * 2.35;
       const gridW = (cols - 1) * spacing;
       const startX = (width - gridW) / 2;
       const startY = height - (rows * spacing) - 10;
@@ -540,7 +390,7 @@
       particles.forEach((p, idx) => {
         const col = idx % cols;
         const row = Math.floor(idx / cols);
-        const stagger = (row % 2 === 1) ? (spacing * 0.45) : 0;
+        const stagger = (row % 2 === 1) ? (spacing * 0.5) : 0;
         p.gridX = startX + (col * spacing) + stagger;
         p.gridY = startY + (row * (spacing * 0.9));
       });
@@ -552,7 +402,7 @@
         if (state === 'gas') {
           p.x = PARTICLE_RADIUS + Math.random() * (width - PARTICLE_RADIUS * 2);
           p.y = PARTICLE_RADIUS + Math.random() * (height - PARTICLE_RADIUS * 2);
-          const speed = 3.2 + Math.random() * 1.8;
+          const speed = 3.5 + Math.random() * 1.5;
           const theta = Math.random() * Math.PI * 2;
           p.vx = Math.cos(theta) * speed;
           p.vy = Math.sin(theta) * speed;
@@ -572,7 +422,7 @@
 
     function toggleAgitation() {
       particles.forEach(p => {
-        const impulse = 4.2;
+        const impulse = 5.0;
         p.vx += (Math.random() - 0.5) * impulse;
         p.vy -= Math.random() * impulse;
       });
@@ -627,8 +477,8 @@
         }
 
       } else if (currentState === 'liquid') {
-        const gravity = 0.2;
-        const jitter = 0.4;
+        const gravity = 0.22;
+        const jitter = 0.35;
         for (let i = 0; i < particles.length; i++) {
           const p = particles[i];
           p.vy += gravity;
@@ -671,21 +521,20 @@
         particles.forEach(p => {
           const dx = p.gridX - p.x;
           const dy = p.gridY - p.y;
-          p.vx += dx * 0.2;
-          p.vy += dy * 0.2;
+          p.vx += dx * 0.22;
+          p.vy += dy * 0.22;
           p.vx *= 0.72;
           p.vy *= 0.72;
 
-          // Subtle thermal lattice oscillation
-          p.vx += (Math.random() - 0.5) * 0.45;
-          p.vy += (Math.random() - 0.5) * 0.45;
+          p.vx += (Math.random() - 0.5) * 0.35;
+          p.vy += (Math.random() - 0.5) * 0.35;
 
           p.x += p.vx;
           p.y += p.vy;
         });
       }
 
-      // Pointer agitation
+      // Pointer Interactive Agitation
       if (pointer.active) {
         particles.forEach(p => {
           const dx = p.x - pointer.x;
@@ -694,7 +543,7 @@
           if (dist < pointer.radius && dist > 0) {
             const force = (pointer.radius - dist) / pointer.radius;
             const angle = Math.atan2(dy, dx);
-            const imp = force * 5.5;
+            const imp = force * 6.0;
             p.vx += Math.cos(angle) * imp;
             p.vy += Math.sin(angle) * imp;
           }
@@ -705,7 +554,7 @@
     function render() {
       ctx.clearRect(0, 0, width, height);
 
-      // Fine grid background
+      // Faint background chamber grid
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
       ctx.lineWidth = 1;
       const step = 16;
@@ -716,11 +565,11 @@
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
       }
 
-      // Solid lattice connections
+      // Solid crystal lattice bonds
       if (currentState === 'solid') {
-        ctx.strokeStyle = 'rgba(2, 236, 166, 0.22)';
+        ctx.strokeStyle = 'rgba(255, 119, 75, 0.26)';
         ctx.lineWidth = 1.2;
-        const bondLimit = PARTICLE_RADIUS * 2.65;
+        const bondLimit = PARTICLE_RADIUS * 2.7;
         for (let i = 0; i < particles.length; i++) {
           for (let j = i + 1; j < particles.length; j++) {
             const dx = particles[i].x - particles[j].x;
@@ -735,7 +584,7 @@
         }
       }
 
-      // Velocity streaks for Gas
+      // Gas velocity vector trails
       if (currentState === 'gas') {
         ctx.strokeStyle = 'rgba(2, 236, 166, 0.35)';
         ctx.lineWidth = 1.2;
@@ -747,7 +596,7 @@
         });
       }
 
-      // Molecules rendering
+      // Particle rendering with corporate colors
       particles.forEach(p => {
         const grad = ctx.createRadialGradient(
           p.x - p.radius * 0.35,
@@ -765,12 +614,12 @@
           grad.addColorStop(1, '#008b60');
         } else if (currentState === 'liquid') {
           // TÜV SÜD Blue (#0046AD)
-          grad.addColorStop(0, '#82b7ff');
+          grad.addColorStop(0, '#9dc1ff');
           grad.addColorStop(0.5, '#0046AD');
           grad.addColorStop(1, '#00255c');
         } else {
-          // Warm Orange for Solid (#FF774B)
-          grad.addColorStop(0, '#ffbeaa');
+          // Warm Orange (#FF774B)
+          grad.addColorStop(0, '#ffcebf');
           grad.addColorStop(0.5, '#FF774B');
           grad.addColorStop(1, '#a63310');
         }
@@ -778,15 +627,15 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = grad;
-        ctx.shadowColor = currentState === 'gas' ? '#02ECA6' : 'rgba(0, 70, 173, 0.4)';
-        ctx.shadowBlur = currentState === 'gas' ? 6 : 2;
+        ctx.shadowColor = currentState === 'gas' ? '#02ECA6' : (currentState === 'solid' ? '#FF774B' : '#0046AD');
+        ctx.shadowBlur = currentState === 'gas' ? 6 : 3;
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Specular highlight
+        // Specular reflection highlight
         ctx.beginPath();
         ctx.arc(p.x - p.radius * 0.35, p.y - p.radius * 0.35, p.radius * 0.22, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
         ctx.fill();
       });
     }
